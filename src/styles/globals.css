@@ -3,6 +3,6 @@
 @tailwind utilities;
 
 .link {
-    @apply text-primary-400 hover:text-primary-600;
+    @apply text-primary-700 hover:text-primary-400;
     @apply no-underline hover:underline;
 }

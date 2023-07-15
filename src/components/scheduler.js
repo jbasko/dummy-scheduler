@@ -7,6 +7,7 @@ import Interaction from "@event-calendar/interaction"
 import React, {useEffect, useMemo, useRef, useState} from "react"
 
 import "@event-calendar/core/index.css"
+import {DatePickerInput} from "@mantine/dates";
 
 
 const EventEditor = ({open, onClose, event}) => {
@@ -39,6 +40,8 @@ const Scheduler = ({date}) => {
     const [eventEditorOpen, setEventEditorOpen] = useState(false)
     const [editedEvent, setEditedEvent] = useState(null)
 
+    const [calendarDate, setCalendarDate] = useState(date)
+
     const calendar = useMemo(() => {
         if (!ref.current) return
 
@@ -47,6 +50,7 @@ const Scheduler = ({date}) => {
             props: {
                 plugins: [TimeGrid, Interaction],
                 options: {
+                    date: date,
                     editable: true,
                     selectable: true,
                     view: "timeGridWeek",
@@ -82,8 +86,26 @@ const Scheduler = ({date}) => {
         setRendered(true)
     }, [])
 
+    useEffect(() => {
+        if (calendar && calendar.getOption("date") !== calendarDate) {
+            setCalendarDate(calendar.getOption("date"))
+        }
+    }, [calendar])
+
     return (
         <div>
+            <div className={"w-44"}>
+                <DatePickerInput
+                    value={calendarDate}
+                    onChange={(value) => {
+                        if (value) {
+                            setCalendarDate(value)
+                            calendar.setOption("date", value)
+                        }
+                    }}
+                />
+            </div>
+
             {/*<DatePicker onChange={(value) => {*/}
             {/*    if (value.isValid()) {*/}
             {/*        calendar.setOption("date", value.toDate())*/}
