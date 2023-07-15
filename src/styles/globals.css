@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.link {
+    @apply text-primary-400 hover:text-primary-600;
+    @apply no-underline hover:underline;
+}

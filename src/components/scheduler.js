@@ -1,31 +1,36 @@
-import Calendar from "@event-calendar/core";
-import TimeGrid from "@event-calendar/time-grid";
-import Interaction from "@event-calendar/interaction";
+"use client"
+
+import Calendar from "@event-calendar/core"
+import TimeGrid from "@event-calendar/time-grid"
+import Interaction from "@event-calendar/interaction"
 
 import React, {useEffect, useMemo, useRef, useState} from "react"
 
 import "@event-calendar/core/index.css"
-import {DatePicker} from "@mui/x-date-pickers";
-import {Dialog, DialogContent, DialogContentText, DialogTitle, TextField} from "@mui/material";
 
 
 const EventEditor = ({open, onClose, event}) => {
     return (
-        <Dialog
-            open={open}
-            onClose={onClose}
-        >
-            <DialogTitle>Edit Event</DialogTitle>
-            <DialogContent>
-                <DialogContentText>You can edit the event details here.</DialogContentText>
-                <TextField label={"Start time"} value={event?.start}/>
-                <TextField
-                    multiline={true}
-                    rows={4}
-                />
-            </DialogContent>
-        </Dialog>
+        <div>
+            Event Editor
+        </div>
     )
+    // return (
+    //     <Dialog
+    //         open={open}
+    //         onClose={onClose}
+    //     >
+    //         <DialogTitle>Edit Event</DialogTitle>
+    //         <DialogContent>
+    //             <DialogContentText>You can edit the event details here.</DialogContentText>
+    //             <TextField label={"Start time"} value={event?.start}/>
+    //             <TextField
+    //                 multiline={true}
+    //                 rows={4}
+    //             />
+    //         </DialogContent>
+    //     </Dialog>
+    // )
 }
 
 const Scheduler = ({date}) => {
@@ -75,18 +80,15 @@ const Scheduler = ({date}) => {
 
     useEffect(() => {
         setRendered(true)
-        return () => {
-            calendar.destroy()
-        }
     }, [])
 
     return (
         <div>
-            <DatePicker onChange={(value) => {
-                if (value.isValid()) {
-                    calendar.setOption("date", value.toDate())
-                }
-            }} />
+            {/*<DatePicker onChange={(value) => {*/}
+            {/*    if (value.isValid()) {*/}
+            {/*        calendar.setOption("date", value.toDate())*/}
+            {/*    }*/}
+            {/*}} />*/}
             <div ref={ref}/>
             <EventEditor
                 event={editedEvent}
