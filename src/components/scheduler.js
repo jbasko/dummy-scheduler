@@ -8,7 +8,7 @@ import React, {useEffect, useMemo, useRef, useState} from "react"
 
 import "@event-calendar/core/index.css"
 import {DatePickerInput, DateTimePicker} from "@mantine/dates";
-import {Button, Group, Modal, SegmentedControl, Textarea, TextInput} from "@mantine/core";
+import {Button, Drawer, Group, SegmentedControl, Textarea, TextInput} from "@mantine/core";
 import {useDisclosure} from "@mantine/hooks";
 import {nanoid} from "nanoid";
 
@@ -130,15 +130,17 @@ const Scheduler = ({date}) => {
 
             <div ref={ref}/>
 
-            <Modal opened={isEditorOpen} onClose={() => closeEditor({save: false})} title={"Edit Event"} zIndex={1000}>
+            <Drawer
+                opened={isEditorOpen}
+                onClose={() => closeEditor({save: false})}
+                title={editedEvent?.extendedProps?.isNew ? "New Event" : "Edit Event"}
+                position={"right"}>
                 <form onSubmit={(event) => {
                     closeEditor({save: true})
                     event.preventDefault()
                 }}>
                     <Group position={"apart"}>
                         <DateTimePicker
-                            disabled={true}
-                            dropdownType={"modal"}
                             label={"Start"}
                             value={editedEvent?.start}
                             onChange={(value) => {
@@ -148,8 +150,6 @@ const Scheduler = ({date}) => {
                             }}
                         />
                         <DateTimePicker
-                            disabled={true}
-                            dropdownType={"modal"}
                             label={"End"}
                             value={editedEvent?.end}
                             onChange={(value) => {
@@ -206,7 +206,7 @@ const Scheduler = ({date}) => {
                         </Group>
                     </div>
                 </form>
-            </Modal>
+            </Drawer>
         </>
     )
 }
