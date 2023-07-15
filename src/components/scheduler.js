@@ -7,38 +7,35 @@ import Interaction from "@event-calendar/interaction"
 import React, {useEffect, useMemo, useRef, useState} from "react"
 
 import "@event-calendar/core/index.css"
-import {DatePickerInput} from "@mantine/dates";
+import {DatePickerInput, DateTimePicker} from "@mantine/dates";
+import {Button, Group, Modal, SegmentedControl, Textarea, TextInput} from "@mantine/core";
+import {useDisclosure} from "@mantine/hooks";
+import {nanoid} from "nanoid";
 
 
-const EventEditor = ({open, onClose, event}) => {
-    return (
-        <div>
-            Event Editor
-        </div>
-    )
-    // return (
-    //     <Dialog
-    //         open={open}
-    //         onClose={onClose}
-    //     >
-    //         <DialogTitle>Edit Event</DialogTitle>
-    //         <DialogContent>
-    //             <DialogContentText>You can edit the event details here.</DialogContentText>
-    //             <TextField label={"Start time"} value={event?.start}/>
-    //             <TextField
-    //                 multiline={true}
-    //                 rows={4}
-    //             />
-    //         </DialogContent>
-    //     </Dialog>
-    // )
-}
+const EVENT_COLORS = [
+    // Light:
+    // "#c9a0dc",
+    // "#fbee95",
+    // "#99ccff",
+    // "#ffb3c6",
+    // "#a0db8e",
+    // Dark:
+    "#e91e63",
+    "#c2185b",
+    "#9c2780",
+    "#5727b0",
+    "#272ab0",
+    "#57acdc",
+    "#60c689",
+]
+
 
 const Scheduler = ({date}) => {
     const ref = useRef()
     const [rendered, setRendered] = useState(false)
-    const [eventEditorOpen, setEventEditorOpen] = useState(false)
     const [editedEvent, setEditedEvent] = useState(null)
+    const [isEditorOpen, editorControls] = useDisclosure(false)
 
     const [calendarDate, setCalendarDate] = useState(date)
 
@@ -65,14 +62,25 @@ const Scheduler = ({date}) => {
                     events: [],
                     // dateClick: (info) => {
                     // },
-                    select: ({start, end, allDay}) => {
-                        const event = {start, end, allDay}
+                    select: ({start, end, allDay, ...rest}) => {
+                        const event = {
+                            id: nanoid(),
+                            start,
+                            end,
+                            allDay,
+                            title: "",
+                            extendedProps: {description: "", isNew: true},
+                            backgroundColor: EVENT_COLORS[0],
+                        }
                         cal.addEvent(event)
+                        // cal.updateEvent(event)
                         setEditedEvent(event)
-                        setEventEditorOpen(true)
+                        editorControls.open()
                     },
+                    selectBackgroundColor: EVENT_COLORS[0],
                     eventClick: ({event}) => {
-                        setEventEditorOpen(!eventEditorOpen)
+                        setEditedEvent(event)
+                        editorControls.open()
                     },
                 }
             }
@@ -92,8 +100,22 @@ const Scheduler = ({date}) => {
         }
     }, [calendar])
 
+    const closeEditor = ({save = false}) => {
+        editorControls.close()
+        if (save) {
+            const newEvent = {
+                ...editedEvent,
+                extendedProps: {...editedEvent.extendedProps, isNew: false}
+            }
+            setEditedEvent(newEvent)
+            calendar.updateEvent(newEvent)
+        } else if (editedEvent?.extendedProps?.isNew) {
+            calendar.removeEventById(editedEvent.id)
+        }
+    }
+
     return (
-        <div>
+        <>
             <div className={"w-44"}>
                 <DatePickerInput
                     value={calendarDate}
@@ -106,18 +128,86 @@ const Scheduler = ({date}) => {
                 />
             </div>
 
-            {/*<DatePicker onChange={(value) => {*/}
-            {/*    if (value.isValid()) {*/}
-            {/*        calendar.setOption("date", value.toDate())*/}
-            {/*    }*/}
-            {/*}} />*/}
             <div ref={ref}/>
-            <EventEditor
-                event={editedEvent}
-                open={eventEditorOpen}
-                onClose={() => setEventEditorOpen(false)}
-            />
-        </div>
+
+            <Modal opened={isEditorOpen} onClose={() => closeEditor({save: false})} title={"Edit Event"} zIndex={1000}>
+                <form onSubmit={(event) => {
+                    closeEditor({save: true})
+                    event.preventDefault()
+                }}>
+                    <Group position={"apart"}>
+                        <DateTimePicker
+                            disabled={true}
+                            dropdownType={"modal"}
+                            label={"Start"}
+                            value={editedEvent?.start}
+                            onChange={(value) => {
+                                if (value) {
+                                    setEditedEvent({...editedEvent, start: value})
+                                }
+                            }}
+                        />
+                        <DateTimePicker
+                            disabled={true}
+                            dropdownType={"modal"}
+                            label={"End"}
+                            value={editedEvent?.end}
+                            onChange={(value) => {
+                                if (value) {
+                                    setEditedEvent({...editedEvent, end: value})
+                                }
+                            }}
+                        />
+                    </Group>
+                    <TextInput
+                        label={"Title"}
+                        placeholder={"Title"}
+                        data-autofocus
+                        value={editedEvent?.title}
+                        onChange={(event) => {
+                            setEditedEvent({...editedEvent, title: event.currentTarget.value})
+                        }}
+                    />
+                    <Textarea
+                        label={"Description"}
+                        placeholder={"Description"}
+                        value={editedEvent?.extendedProps?.description}
+                        onChange={(event) => {
+                            setEditedEvent({
+                                ...editedEvent,
+                                extendedProps: {...editedEvent.extendedProps, description: event.currentTarget.value}
+                            })
+                        }}
+                    />
+                    <div className={"my-2"}>
+                        <SegmentedControl
+                            data={EVENT_COLORS.map((color) => ({
+                                value: color, label: (
+                                    <div className={"w-4 h-4 rounded-full"} style={{backgroundColor: color}}/>
+                                )
+                            }))}
+                            value={editedEvent?.backgroundColor}
+                            onChange={(value) => {
+                                setEditedEvent({...editedEvent, backgroundColor: value})
+                            }}
+                        />
+                    </div>
+                    <div className={"my-5"}>
+                        <Group position={"apart"}>
+                            <Button onClick={() => {
+                                closeEditor({save: true})
+                            }}>Save</Button>
+                            {!editedEvent?.extendedProps?.isNew && (
+                                <Button color={"red"} onClick={() => {
+                                    closeEditor({save: false})
+                                    calendar.removeEventById(editedEvent.id)
+                                }}>Delete</Button>
+                            )}
+                        </Group>
+                    </div>
+                </form>
+            </Modal>
+        </>
     )
 }
 
