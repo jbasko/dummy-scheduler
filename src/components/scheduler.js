@@ -14,13 +14,6 @@ import {nanoid} from "nanoid";
 
 
 const EVENT_COLORS = [
-    // Light:
-    // "#c9a0dc",
-    // "#fbee95",
-    // "#99ccff",
-    // "#ffb3c6",
-    // "#a0db8e",
-    // Dark:
     "#e91e63",
     "#c2185b",
     "#9c2780",
@@ -73,7 +66,6 @@ const Scheduler = ({date}) => {
                             backgroundColor: EVENT_COLORS[0],
                         }
                         cal.addEvent(event)
-                        // cal.updateEvent(event)
                         setEditedEvent(event)
                         editorControls.open()
                     },
