@@ -1,22 +1,26 @@
 import {NextResponse} from "next/server";
 
-export async function GET() {
+import OpenAPIClientAxios from "openapi-client-axios";
 
-    const res = await fetch("https://vault.immudb.io/ics/api/v1/ledger/default/collection/default/documents/search", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "X-API-Key": process.env.VAULT_API_KEY,
-        },
-        body: JSON.stringify({
-            "page": 1,
-            "perPage": 100,
-        }),
-    })
-    const data = await res.json()
+const vaultApi = new OpenAPIClientAxios({
+    definition: "https://vault.immudb.io/ics/swagger/openapi.json",
+});
+vaultApi.init();
+
+
+const vaultApiConfig = {
+    baseURL: "https://vault.immudb.io/ics/api/v1/",
+    headers: {
+        "X-API-Key": process.env.VAULT_API_KEY,
+    }
+}
+
+
+export async function GET() {
+    const client = await vaultApi.getClient()
+    const res = await client.CollectionsList({ledger: "default"}, null, vaultApiConfig)
 
     return NextResponse.json({
-        ...data,
+        ...res.data
     })
 }
